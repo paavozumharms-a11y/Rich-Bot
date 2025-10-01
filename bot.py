@@ -32,11 +32,12 @@ def make_script(topic):
             f"Like for more luxury lists!")
 
 def make_silent_mp3(duration=5):
-    """Silent MP3 with numpy only – no ffmpeg, no speaker"""
+    """Silent stereo MP3 – no ffmpeg, no speaker"""
     sr = 44100
-    silence = np.zeros(int(sr * duration), dtype=np.float32)
+    # 2 identical silent channels (stereo)
+    silence = np.zeros((int(sr * duration), 2), dtype=np.float32)
     audio_clip = AudioArrayClip(silence, fps=sr)
-    audio_clip.write_audiofile("voice.mp3", logger=None)
+    audio_clip.write_audiofile("voice.mp3", logger=None
 
 def fetch_clips(keyword, n=3):
     # Pixabay – no key needed
