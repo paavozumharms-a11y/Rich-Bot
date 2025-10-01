@@ -40,20 +40,36 @@ def make_silent_mp3(duration=5):
     audio_clip.write_audiofile("voice.mp3", logger=None)
 
 def fetch_clips(keyword, n=3):
-    """Fetch vertical videos – skip if Pixabay fails"""
-    url = f"https://pixabay.com/videos/api/?q={keyword}&orientation=vertical&per_page={n}"
+    """Pixabay first – if empty/fail use Coverr (no key)"""
+    # 1) try Pixabay
     try:
+        url = f"https://pixabay.com/videos/api/?q={keyword}&orientation=vertical&per_page={n}"
         r = requests.get(url, timeout=15)
-        if r.status_code != 200:
-            print("Pixabay error:", r.status_code)
-            return []
-        data = r.json()
-        urls = [item['videos']['tiny']['url'] for item in data.get('hits', [])][:n]
-        return urls
+        if r.status_code == 200:
+            data = r.json()
+            urls = [item['videos']['tiny']['url'] for item in data.get('hits', [])][:n]
+            if urls:
+                return urls
     except Exception as e:
-        print("Fetch error:", e)
-        return []
-        
+        print("Pixabay fail:", e)
+
+    # 2) fallback: Coverr (vertical videos, CC0)
+    try:
+        coverr = f"https://api.coverr.co/v1/videos?query={keyword}&orientation=vertical&per_page={n}"
+        r = requests.get(coverr, timeout=15)
+        if r.status_code == 200:
+            data = r.json()
+            urls = [item['video_url'] for item in data.get('videos', [])][:n]
+            if urls:
+                return urls
+    except Exception as e:
+        print("Coverr fail:", e)
+
+    # 3) last resort: silent video (black screen) so upload never fails
+    print("Using silent fallback")
+    black = "https://cdn.pixabay.com/vimeo/76979771/black-21897.mp4"  # 9:16 black
+    return [black] * n  # repeat same clip
+    
 def make_video(keyword):
     script = make_script(keyword)
     print("Script:", script)
