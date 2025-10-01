@@ -40,11 +40,20 @@ def make_silent_mp3(duration=5):
     audio_clip.write_audiofile("voice.mp3", logger=None)
 
 def fetch_clips(keyword, n=3):
-    # Pixabay – no key needed
+    """Fetch vertical videos – skip if Pixabay fails"""
     url = f"https://pixabay.com/videos/api/?q={keyword}&orientation=vertical&per_page={n}"
-    data = requests.get(url, timeout=15).json()
-    return [item['videos']['tiny']['url'] for item in data.get('hits', [])][:n]
-
+    try:
+        r = requests.get(url, timeout=15)
+        if r.status_code != 200:
+            print("Pixabay error:", r.status_code)
+            return []
+        data = r.json()
+        urls = [item['videos']['tiny']['url'] for item in data.get('hits', [])][:n]
+        return urls
+    except Exception as e:
+        print("Fetch error:", e)
+        return []
+        
 def make_video(keyword):
     script = make_script(keyword)
     print("Script:", script)
