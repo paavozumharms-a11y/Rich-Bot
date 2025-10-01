@@ -1,4 +1,4 @@
-import os, random, requests, subprocess
+import os, random, requests
 from moviepy.editor import *
 
 # -------- 30 luxury keywords ----------
