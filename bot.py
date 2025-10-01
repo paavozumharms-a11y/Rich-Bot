@@ -1,7 +1,15 @@
+#!/usr/bin/env python3
+"""
+Ultra-simple TikTok luxury bot
+- silent audio (numpy)
+- 3 free clips from Pixabay
+- uploads to YOUR TikTok channel
+"""
 import os, random, requests, numpy as np
 from moviepy.editor import *
+from moviepy.audio.AudioClip import AudioArrayClip
 
-# -------- 30 luxury keywords ----------
+# 30 luxury keywords
 KEYWORDS = [
     "Dubai mansion","super-yacht","Ferrari limited","Malibu villa",
     "private jet interior","Beverly Hills estate","Rolex Daytona",
@@ -16,7 +24,7 @@ KEYWORDS = [
 ]
 
 def make_script(topic):
-    # same simple text
+    # simple template – no internet calls
     return (f"Top 3 most expensive {topic} ever sold. "
             f"Number 3 … unknown luxury piece. "
             f"Number 2 … even bigger mystery. "
@@ -24,14 +32,14 @@ def make_script(topic):
             f"Like for more luxury lists!")
 
 def make_silent_mp3(duration=5):
-    """Create a silent MP3 with numpy + MoviePy – no ffmpeg call"""
-    sr = 44100  # sample rate
+    """Silent MP3 with numpy only – no ffmpeg, no speaker"""
+    sr = 44100
     silence = np.zeros(int(sr * duration), dtype=np.float32)
-    audio_array = AudioArrayClip(silence, fps=sr)
-    audio_array.write_audiofile("voice.mp3", logger=None)
-
+    audio_clip = AudioArrayClip(silence, fps=sr)
+    audio_clip.write_audiofile("voice.mp3", logger=None)
 
 def fetch_clips(keyword, n=3):
+    # Pixabay – no key needed
     url = f"https://pixabay.com/videos/api/?q={keyword}&orientation=vertical&per_page={n}"
     data = requests.get(url, timeout=15).json()
     return [item['videos']['tiny']['url'] for item in data.get('hits', [])][:n]
@@ -55,6 +63,7 @@ def make_video(keyword):
     final = concatenate_videoclips(clips, method="compose").set_audio(audio)
     final.write_videofile("short.mp4", fps=30, codec="libx264", audio_codec="aac", logger=None)
     print("Video ready: short.mp4")
+
 def upload_tt(file, title):
     url = "https://open-api.tiktok.com/share/video/upload/"
     headers = {"Authorization": f"Bearer {os.environ['TT_ACCESS_TOKEN']}"}
