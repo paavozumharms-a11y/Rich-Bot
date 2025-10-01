@@ -1,0 +1,17 @@
+name: Rich-Bot Daily Short
+on:
+  schedule:
+    - cron: "0 14 * * *"   # 14:00 UTC
+  workflow_dispatch:       # manual run
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      - run: pip install -r requirements.txt
+      - run: python bot.py
+        env:
+          YT_SECRET: ${{ secrets.YT_SECRET }}   # single secret = JSON key file
