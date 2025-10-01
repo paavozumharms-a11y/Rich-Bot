@@ -81,13 +81,21 @@ def make_video(keyword):
     final.write_videofile("short.mp4", fps=30, codec="libx264", audio_codec="aac", logger=None)
     print("Video ready: short.mp4")
     
-def upload_tt(file, title):
-    url = "https://open-api.tiktok.com/share/video/upload/"
-    headers = {"Authorization": f"Bearer {os.environ['TT_ACCESS_TOKEN']}"}
-    files = {"video": open(file, "rb")}
-    data = {"description": title}
-    r = requests.post(url, headers=headers, files=files, data=data, timeout=30)
-    print("TikTok upload:", r.status_code, r.text)
+def save_video_locally(filename, keyword):
+    """Saves the finished MP4 into the repo folder"""
+    import shutil, datetime
+    today = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M")
+    final_name = f"{keyword.replace(' ', '_')}_{today}.mp4"
+    shutil.move(filename, final_name)
+    print("Saved locally:", final_name)
+
+def main():
+    keyword = random.choice(KEYWORDS)
+    print("Keyword:", keyword)
+    make_video(keyword)
+    # *******  UPLOAD REMOVED  *******
+    save_video_locally("short.mp4", keyword)
+    print("=== Video ready for download ===")
 
 def main():
     keyword = random.choice(KEYWORDS)
