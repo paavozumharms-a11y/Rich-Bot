@@ -37,7 +37,7 @@ def make_silent_mp3(duration=5):
     # 2 identical silent channels (stereo)
     silence = np.zeros((int(sr * duration), 2), dtype=np.float32)
     audio_clip = AudioArrayClip(silence, fps=sr)
-    audio_clip.write_audiofile("voice.mp3", logger=None
+    audio_clip.write_audiofile("voice.mp3", logger=None)
 
 def fetch_clips(keyword, n=3):
     # Pixabay – no key needed
