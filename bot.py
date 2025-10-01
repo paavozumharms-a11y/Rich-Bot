@@ -1,12 +1,4 @@
-#!/usr/bin/env python3
-"""
-Easy TikTok Bot – zero headaches
-- picks 1 luxury keyword
-- makes 45-second countdown
-- saves voice as .wav (moviepy likes it)
-- uploads to YOUR TikTok channel
-"""
-import os, random, requests, pyttsx3
+import os, random, requests, subprocess
 from moviepy.editor import *
 
 # -------- 30 luxury keywords ----------
@@ -24,22 +16,20 @@ KEYWORDS = [
 ]
 
 def make_script(topic):
-    # simple template – no internet calls
+    # same simple text
     return (f"Top 3 most expensive {topic} ever sold. "
             f"Number 3 … unknown luxury piece. "
             f"Number 2 … even bigger mystery. "
             f"Number 1 … priceless. "
             f"Like for more luxury lists!")
 
-def make_voice(text, outfile):
-    engine = pyttsx3.init()
-    engine.setProperty('rate', 190)      # speed
-    engine.setProperty('volume', 1.0)
-    engine.save_to_file(text, outfile)   # saves .wav
-    engine.runAndWait()
+def make_silent_voice(duration=5):
+    # 5-second silent audio (no speaker needed)
+    subprocess.run([
+        "ffmpeg", "-f", "lavfi", "-i", "anullsrc=r=44100:cl=stereo", "-t", str(duration), "-q:a", "9", "-acodec", "mp3", "voice.mp3"
+    ], check=True)
 
 def fetch_clips(keyword, n=3):
-    # Pixabay – no key needed
     url = f"https://pixabay.com/videos/api/?q={keyword}&orientation=vertical&per_page={n}"
     data = requests.get(url, timeout=15).json()
     return [item['videos']['tiny']['url'] for item in data.get('hits', [])][:n]
@@ -47,9 +37,9 @@ def fetch_clips(keyword, n=3):
 def make_video(keyword):
     script = make_script(keyword)
     print("Script:", script)
-    make_voice(script, "voice.wav")
+    make_silent_voice(5)  # 5-second silent MP3
 
-    audio = AudioFileClip("voice.wav")
+    audio = AudioFileClip("voice.mp3")
     clips = []
     for url in fetch_clips(keyword):
         clip = (VideoFileClip(url)
