@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 Easy TikTok Bot – zero headaches
 - picks 1 luxury keyword
