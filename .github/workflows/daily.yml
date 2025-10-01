@@ -1,7 +1,7 @@
-name: Daily TikTok Upload
+name: Easy TikTok Upload
 on:
   schedule:
-    - cron: "0 14 * * *"   # 14:00 UTC
+    - cron: "0 14 * * *"   # 2 PM UTC every day
   workflow_dispatch:
 jobs:
   upload:
