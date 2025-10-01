@@ -30,8 +30,10 @@ def fetch_script(topic):
         return f"Top 3 most expensive {topic} ever sold … (dummy text)"
 
 async def tts(text, outfile):
-    from edge_tts import Communicate
-    await Communicate(text, "en-US-AriaNeural", rate="+20%").save(outfile)
+    engine = pyttsx3.init()
+    engine.setProperty('rate', 180)  # speed
+    engine.save_to_file(text, outfile)
+    engine.runAndWait()
 
 def fetch_clips(keyword, n=3):
     url = f"https://pixabay.com/videos/api/?q={keyword}&orientation=vertical&per_page={n}"
@@ -41,7 +43,7 @@ def fetch_clips(keyword, n=3):
 def make_video(keyword):
     script = fetch_script(keyword)
     print("Script:", script[:100], "...")
-    asyncio.run(tts(script, "voice.mp3"))
+    tts(script, "voice.mp3")
     audio = AudioFileClip("voice.mp3")
     clips = []
     for url in fetch_clips(keyword):
