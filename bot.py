@@ -37,7 +37,10 @@ def fetch_clips(keyword, n=3):
 def make_video(keyword):
     script = make_script(keyword)
     print("Script:", script)
-    make_silent_voice(5)  # 5-second silent MP3
+
+    # 5-second silent MP3 – made with MoviePy (no ffmpeg call)
+    silent_audio = AudioFileClip("").subclip(0, 5)  # empty = silent
+    silent_audio.write_audiofile("voice.mp3", fps=44100, logger=None)
 
     audio = AudioFileClip("voice.mp3")
     clips = []
@@ -53,7 +56,6 @@ def make_video(keyword):
     final = concatenate_videoclips(clips, method="compose").set_audio(audio)
     final.write_videofile("short.mp4", fps=30, codec="libx264", audio_codec="aac", logger=None)
     print("Video ready: short.mp4")
-
 def upload_tt(file, title):
     url = "https://open-api.tiktok.com/share/video/upload/"
     headers = {"Authorization": f"Bearer {os.environ['TT_ACCESS_TOKEN']}"}
