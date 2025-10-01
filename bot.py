@@ -1,4 +1,4 @@
-import os, random, requests
+import os, random, requests, numpy as np
 from moviepy.editor import *
 
 # -------- 30 luxury keywords ----------
@@ -23,11 +23,13 @@ def make_script(topic):
             f"Number 1 … priceless. "
             f"Like for more luxury lists!")
 
-def make_silent_voice(duration=5):
-    # 5-second silent audio (no speaker needed)
-    subprocess.run([
-        "ffmpeg", "-f", "lavfi", "-i", "anullsrc=r=44100:cl=stereo", "-t", str(duration), "-q:a", "9", "-acodec", "mp3", "voice.mp3"
-    ], check=True)
+def make_silent_mp3(duration=5):
+    """Create a silent MP3 with numpy + MoviePy – no ffmpeg call"""
+    sr = 44100  # sample rate
+    silence = np.zeros(int(sr * duration), dtype=np.float32)
+    audio_array = AudioArrayClip(silence, fps=sr)
+    audio_array.write_audiofile("voice.mp3", logger=None)
+
 
 def fetch_clips(keyword, n=3):
     url = f"https://pixabay.com/videos/api/?q={keyword}&orientation=vertical&per_page={n}"
@@ -37,10 +39,7 @@ def fetch_clips(keyword, n=3):
 def make_video(keyword):
     script = make_script(keyword)
     print("Script:", script)
-
-    # 5-second silent MP3 – made with MoviePy (no ffmpeg call)
-    silent_audio = AudioFileClip("").subclip(0, 5)  # empty = silent
-    silent_audio.write_audiofile("voice.mp3", fps=44100, logger=None)
+    make_silent_mp3(5)  # 5-second silent MP3
 
     audio = AudioFileClip("voice.mp3")
     clips = []
