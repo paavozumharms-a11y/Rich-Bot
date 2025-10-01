@@ -63,9 +63,9 @@ def make_video(keyword):
     make_silent_mp3(5)  # 5-second silent MP3
 
     audio = AudioFileClip("voice.mp3")
-    clips = []
-    for url in fetch_clips(keyword):
-         # if we got "selfmade", create silent black video
+    urls = fetch_clips(keyword)
+
+    # if we got "selfmade", create silent black video
     if urls == ["selfmade"]:
         black_clip = ColorClip(size=(1080, 1920), color=(0, 0, 0), duration=5)
         black_clip = black_clip.set_audio(AudioArrayClip(np.zeros((int(44100 * 5), 2)), fps=44100))
@@ -73,13 +73,14 @@ def make_video(keyword):
         clips = [VideoFileClip("selfmade.mp4")]
     else:
         clips = [VideoFileClip(u).resize(height=1920).crop(x_center=540, width=1080, height=1920) for u in urls]
+
     if not clips:
-        raise RuntimeError("No clips downloaded – check internet or keyword")
+        raise RuntimeError("No clips – this should never happen now")
 
     final = concatenate_videoclips(clips, method="compose").set_audio(audio)
     final.write_videofile("short.mp4", fps=30, codec="libx264", audio_codec="aac", logger=None)
     print("Video ready: short.mp4")
-
+    
 def upload_tt(file, title):
     url = "https://open-api.tiktok.com/share/video/upload/"
     headers = {"Authorization": f"Bearer {os.environ['TT_ACCESS_TOKEN']}"}
