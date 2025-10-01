@@ -40,7 +40,7 @@ def make_silent_mp3(duration=5):
     audio_clip.write_audiofile("voice.mp3", logger=None)
 
 def fetch_clips(keyword, n=3):
-    """Pixabay first – if empty/fail use Coverr (no key)"""
+    """Pixabay first – if empty/fail use self-made silent video"""
     # 1) try Pixabay
     try:
         url = f"https://pixabay.com/videos/api/?q={keyword}&orientation=vertical&per_page={n}"
@@ -53,22 +53,9 @@ def fetch_clips(keyword, n=3):
     except Exception as e:
         print("Pixabay fail:", e)
 
-    # 2) fallback: Coverr (vertical videos, CC0)
-    try:
-        coverr = f"https://api.coverr.co/v1/videos?query={keyword}&orientation=vertical&per_page={n}"
-        r = requests.get(coverr, timeout=15)
-        if r.status_code == 200:
-            data = r.json()
-            urls = [item['video_url'] for item in data.get('videos', [])][:n]
-            if urls:
-                return urls
-    except Exception as e:
-        print("Coverr fail:", e)
-
-    # 3) last resort: silent video (black screen) so upload never fails
-    print("Using silent fallback")
-    black = "https://cdn.pixabay.com/vimeo/76979771/black-21897.mp4"  # 9:16 black
-    return [black] * n  # repeat same clip
+    # 2) self-made silent 9:16 video (black) – no internet, no URL
+    print("Using self-made silent video")
+    return ["selfmade"]  # special flag
     
 def make_video(keyword):
     script = make_script(keyword)
@@ -78,11 +65,14 @@ def make_video(keyword):
     audio = AudioFileClip("voice.mp3")
     clips = []
     for url in fetch_clips(keyword):
-        clip = (VideoFileClip(url)
-                .resize(height=1920)
-                .crop(x_center=540, width=1080, height=1920))
-        clips.append(clip)
-
+         # if we got "selfmade", create silent black video
+    if urls == ["selfmade"]:
+        black_clip = ColorClip(size=(1080, 1920), color=(0, 0, 0), duration=5)
+        black_clip = black_clip.set_audio(AudioArrayClip(np.zeros((int(44100 * 5), 2)), fps=44100))
+        black_clip.write_videofile("selfmade.mp4", fps=30, logger=None)
+        clips = [VideoFileClip("selfmade.mp4")]
+    else:
+        clips = [VideoFileClip(u).resize(height=1920).crop(x_center=540, width=1080, height=1920) for u in urls]
     if not clips:
         raise RuntimeError("No clips downloaded – check internet or keyword")
 
